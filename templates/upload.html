@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+    <div class="upload-area" style="border-radius: var(--radius-lg); padding: 4rem;">
+        <h1 style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--secondary);">Patient Video Analysis</h1>
+        <p class="subtitle" style="color: var(--text-muted); margin-bottom: 3rem;">Securely upload patient video for
+            medical screening. Our AI will analyze facial expressions and speech patterns.</p>
+
+        <form id="uploadForm" method="POST" enctype="multipart/form-data">
+            <div class="input-group" style="margin-bottom: 2rem;">
+                <i class="fas fa-id-badge"></i>
+                <input type="text" name="patient_id" placeholder="Patient Id or Name" required
+                    style="border: 2px solid #cbd5e1; transition: border-color 0.3s ease;">
+            </div>
+
+            <div class="drop-zone" id="dropZone"
+                style="border: 2px dashed #cbd5e1; background: #f8fafc; border-radius: var(--radius-md);">
+                <div style="font-size: 3rem; color: var(--primary); margin-bottom: 1.5rem;">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <p style="font-size: 1.1rem; color: var(--secondary); font-weight: 500;">Drag & Drop patient video here
+                </p>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem;">Or click to <span>Browse
+                        Files</span></p>
+                <input type="file" name="video" id="videoInput" accept="video/*" required hidden>
+            </div>
+
+            <div id="filePreview" class="hidden"
+                style="margin: 2rem 0; padding: 1rem; background: var(--primary-light); border-radius: var(--radius-sm); border: 1px solid var(--primary);">
+                <p class="filename" style="color: var(--primary-dark); font-weight: 600;"><i
+                        class="fas fa-file-video"></i> Selected: <span id="fileNameDisplay"></span></p>
+            </div>
+
+            <button type="submit" class="cta-btn analyze-btn" id="analyzeBtn" disabled
+                style="margin-top: 2rem; font-size: 1.1rem;">
+                Start Analysis <i class="fas fa-arrow-right" style="margin-left: 0.5rem;"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('videoInput');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const filePreview = document.getElementById('filePreview');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const form = document.getElementById('uploadForm');
+
+    // Trigger file input click
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    // Handle file selection
+    fileInput.addEventListener('change', handleFileSelect);
+
+    // Drag and Drop
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            handleFileSelect();
+        }
+    });
+
+    function handleFileSelect() {
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            fileNameDisplay.textContent = file.name;
+            filePreview.classList.remove('hidden');
+            analyzeBtn.disabled = false;
+            analyzeBtn.classList.add('active');
+        }
+    }
+
+    form.addEventListener('submit', () => {
+        analyzeBtn.innerHTML = 'Analyzing... <i class="fas fa-spinner fa-spin"></i>';
+        analyzeBtn.style.opacity = '0.7';
+        analyzeBtn.style.pointerEvents = 'none';
+    });
+</script>
+{% endblock %}

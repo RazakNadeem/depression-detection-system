@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1>Welcome, Dr. {{ user.name }}</h1>
+    <div class="header-actions">
+        <div class="search-container">
+            <i class="fas fa-search"></i>
+            <input type="text" id="patientSearch" placeholder="Search Patients by ID..." onkeyup="filterPatients()">
+            <i class="fas fa-times clear-search" id="clearSearchBtn" onclick="clearSearch()"></i>
+        </div>
+        <a href="{{ url_for('upload_video') }}" class="add-btn"><i class="fas fa-plus"></i> New Analysis</a>
+    </div>
+</div>
+
+<div class="patient-list">
+    {% if patient_groups %}
+    {% for patient_id, reports in patient_groups.items() %}
+    <details class="patient-folder">
+        <summary>
+            <div class="folder-header">
+                <span class="folder-icon"><i class="fas fa-user-circle"></i></span>
+                <span class="patient-name">Patient ID: {{ patient_id }}</span>
+                <span class="report-count">{{ reports|length }} Report(s)</span>
+
+                <div style="display: flex; margin-left: auto; margin-right: 1.5rem; align-items: center; gap: 0.5rem;">
+                    <form id="rename-form-{{ loop.index }}" action="{{ url_for('rename_patient', patient_id=patient_id) }}" method="POST" style="display:none;">
+                        <input type="hidden" name="new_patient_id" id="new_patient_id_{{ loop.index }}" value="">
+                    </form>
+                    <button type="button" onclick="const newName = prompt('Enter new patient ID:', '{{ patient_id }}'); if(newName && newName !== '{{ patient_id }}') { document.getElementById('new_patient_id_{{ loop.index }}').value = newName; document.getElementById('rename-form-{{ loop.index }}').submit(); }" title="Rename Patient ID" style="background: none; border: none; cursor: pointer; color: var(--primary); font-size: 1.1rem; padding: 0.5rem;">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <form action="{{ url_for('delete_patient', patient_id=patient_id) }}" method="POST"
+                        style="display:inline;"
+                        onsubmit="return confirm('Are you sure? This will delete ALL history and files for Patient {{ patient_id }}.');">
+                        <button type="submit" class="delete-btn" title="Delete Patient History" style="background: none; border: none; cursor: pointer; color: #ef4444; font-size: 1.1rem; padding: 0.5rem;">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <span class="expand-icon"><i class="fas fa-chevron-down"></i></span>
+            </div>
+        </summary>
+
+        <div class="reports-grid folder-content">
+            {% for report in reports %}
+            <div class="report-card">
+                <div class="card-header">
+                    <span class="date"><i class="far fa-calendar-alt"></i> {{ report.timestamp.strftime('%Y %b %d')
+                        }}</span>
+                    <span
+                        class="badge {{ 'danger' if report.depression_score > 60 else 'warning' if report.depression_score > 30 else 'success' }}">
+                        Score: {{ report.depression_score|round(1) }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--secondary);">{{
+                        report.video_filename }}</h3>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <p><span style="color: var(--text-muted);">Status:</span>
+                            {% if report.depression_score > 60 %}
+                            <span style="color: var(--accent); font-weight: 700;">High Risk</span>
+                            {% elif report.depression_score > 30 %}
+                            <span style="color: #f97316; font-weight: 700;">Medium Risk</span>
+                            {% else %}
+                            <span style="color: var(--primary); font-weight: 700;">Low Risk</span>
+                            {% endif %}
+                        </p>
+
+                    </div>
+                </div>
+                <div class="card-footer" style="margin-top: 1.5rem; text-align: right;">
+                    <a href="{{ url_for('result', report_id=report.id) }}" class="view-btn"
+                        style="color: var(--primary); font-weight: 700; text-decoration: none;">
+                        Details <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </details>
+    {% endfor %}
+    {% else %}
+    <div class="empty-state">
+        <div style="font-size: 5rem; color: var(--primary-light); margin-bottom: 2rem;">
+            <i class="fas fa-folder-open"></i>
+        </div>
+        <h2>No Patient Records</h2>
+        <p>You haven't analyzed any videos yet. Start your first analysis to see results here.</p>
+        <a href="{{ url_for('upload_video') }}" class="add-btn" style="margin-top: 2rem;">
+            <i class="fas fa-plus"></i> New Analysis
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function filterPatients() {
+        const input = document.getElementById('patientSearch');
+        const clearBtn = document.getElementById('clearSearchBtn');
+        const filter = input.value.toUpperCase();
+        const folders = document.getElementsByClassName('patient-folder');
+        let visibleCount = 0;
+
+        // Show/hide clear button
+        clearBtn.style.display = input.value !== "" ? "block" : "none";
+
+        for (let i = 0; i < folders.length; i++) {
+            const patientName = folders[i].querySelector('.patient-name');
+            const txtValue = patientName.textContent || patientName.innerText;
+
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                folders[i].style.display = "";
+                visibleCount++;
+            } else {
+                folders[i].style.display = "none";
+            }
+        }
+
+        // Show no results message if needed
+        const list = document.querySelector('.patient-list');
+        let noResult = document.getElementById('noSearchMatch');
+
+        if (visibleCount === 0 && filter !== "") {
+            if (!noResult) {
+                noResult = document.createElement('div');
+                noResult.id = 'noSearchMatch';
+                noResult.className = 'empty-state';
+                noResult.innerHTML = '<p>No patients found matching "' + input.value + '"</p>';
+                list.appendChild(noResult);
+            }
+        } else if (noResult) {
+            noResult.remove();
+        }
+    }
+
+    function clearSearch() {
+        const input = document.getElementById('patientSearch');
+        input.value = "";
+        filterPatients();
+        input.focus();
+    }
+</script>
+{% endblock %}

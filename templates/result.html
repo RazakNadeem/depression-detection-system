@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="result-container">
+    <header class="result-header" style="margin-bottom: 1rem;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <i class="fas fa-file-medical-alt" style="font-size: 2rem; color: var(--primary);"></i>
+            <div>
+                <h1 style="font-size: 1.25rem; margin: 0;">Analysis Report</h1>
+                <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Patient Video: {{
+                    report.video_filename }}</p>
+            </div>
+        </div>
+        <a href="{{ url_for('download_report', report_id=report.id) }}" class="download-btn"
+            style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+            <i class="fas fa-file-pdf"></i> Download PDF
+        </a>
+    </header>
+
+    <div class="results-container">
+        <!-- Main Status Card -->
+        <div class="card score-card">
+            <h3>Diagnostic Result</h3>
+            <div
+                class="score-circle {% if report.depression_score > 60 %}high-risk{% elif report.depression_score > 30 %}medium-risk{% else %}low-risk{% endif %}">
+                <span style="font-size: 1.5rem;">
+                    {% if report.depression_score > 60 %}
+                    HIGH RISK
+                    {% elif report.depression_score > 30 %}
+                    MEDIUM
+                    {% else %}
+                    LOW
+                    {% endif %}
+                </span>
+            </div>
+            <p class="status-text">
+                Psychological Risk Level: {{ report.depression_score|round(1) }}%
+            </p>
+        </div>
+
+        <!-- Audio Analysis -->
+        <div class="card audio-card">
+            <h3>Audio/Text Analysis</h3>
+            <div class="card-body">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                    <i class="fas fa-comment-dots" style="font-size: 1.5rem; color: var(--primary);"></i>
+                    <p style="margin:0;">Sentiment Score: <strong>{{ report.audio_sentiment }}</strong></p>
+                </div>
+                <div class="transcription-preview">
+                    <h4>Transcription:</h4>
+                    <p style="font-style: italic; line-height: 1.6;">"{{ report.audio_text }}"</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visual Analysis Chart -->
+        <div class="card visual-card">
+            <h3>Facial Emotion Analysis</h3>
+            <div class="card-body" style="display: flex; justify-content: center; align-items: center;">
+                {% if report.face_percentage > 0 %}
+                <div style="width: 300px; height: 300px;">
+                    <canvas id="emotionChart"></canvas>
+                </div>
+                {% else %}
+                <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                    <i class="fas fa-eye-slash" style="font-size: 3rem; margin-bottom: 1rem; color: #cbd5e1;"></i>
+                    <p>No clear facial features detected for emotion analysis.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recommendations Card -->
+        <div class="card recommendations-card">
+            <h3>Personalized Recommendations</h3>
+            <div class="rec-content">
+                <div class="rec-icon">
+                    <i class="fas fa-hand-holding-heart fa-2x"></i>
+                </div>
+                <div class="rec-text">
+                    {% if report.depression_score > 60 %}
+                    <p class="severity-label high">Severe Indicators Detected</p>
+                    <p>Your analysis indicates significant psychological distress. We strongly recommend immediate
+                        professional consultation.</p>
+                    <ul class="rec-list">
+                        <li>Contact a licensed psychiatrist for clinical assessment.</li>
+                        <li>Discuss Cognitive Behavioral Therapy (CBT) options.</li>
+                        <li>Establish a supportive network of family and friends.</li>
+                        <li>Prioritize safety planning and professional monitoring.</li>
+                    </ul>
+                    {% elif report.depression_score > 30 %}
+                    <p class="severity-label medium">Moderate Indicators Detected</p>
+                    <p>Several markers of depression were observed. Early proactive management is highly encouraged
+                        to
+                        improve well-being.</p>
+                    <ul class="rec-list">
+                        <li>Schedule sessions with a mental health counselor.</li>
+                        <li>Practice mindfulness and daily stress-reduction techniques.</li>
+                        <li>Maintain a regular sleep schedule and balanced nutrition.</li>
+                        <li>Perform a follow-up analysis in 2 weeks to monitor progress.</li>
+                    </ul>
+                    {% else %}
+                    <p class="severity-label low">Low Indicators Detected</p>
+                    <p>Current analysis shows minimal markers of depression. Focus on maintaining a resilient
+                        mindset
+                        and healthy habits.</p>
+                    <ul class="rec-list">
+                        <li>Engage in regular physical exercise (30 mins daily).</li>
+                        <li>Maintain social connections and hobby engagement.</li>
+                        <li>Practice gratitude journaling or light meditation.</li>
+                        <li>Schedule routine wellness check-ups annually.</li>
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="disclaimer">
+                <p><i class="fas fa-info-circle"></i> <strong>Note:</strong> This tool is for <strong>screening
+                        purposes
+                        only</strong>. For a proper diagnosis, please consult a qualified doctor or psychiatrist.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    {% if report.face_percentage > 0 %}
+    const ctx = document.getElementById('emotionChart').getContext('2d');
+    const emotionData = {{ emotions| tojson }};
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(emotionData),
+            datasets: [{
+                data: Object.values(emotionData),
+                backgroundColor: [
+                    '#e76f51', '#2a9d8f', '#264653', '#e9c46a', '#f4a261', '#457b9d', '#1d3557'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}

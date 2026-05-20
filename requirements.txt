@@ -1,0 +1,14 @@
+flask
+flask-sqlalchemy
+flask-login
+opencv-python
+moviepy
+textblob
+fpdf
+fer
+tensorflow
+numpy
+pandas
+werkzeug
+openai-whisper
+torch

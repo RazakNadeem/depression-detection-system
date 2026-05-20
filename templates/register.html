@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card register-card" style="max-width: 500px;">
+        <div style="font-size: 3rem; color: var(--primary); margin-bottom: 1.5rem;">
+            <i class="fas fa-user-plus"></i>
+        </div>
+        <h2>Doctor Registration</h2>
+        <form method="POST">
+            <div class="input-group">
+                <i class="fas fa-id-card"></i>
+                <input type="text" name="name" placeholder="Full Name (Dr.)" required>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input type="text" name="username" placeholder="Username" required>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-key"></i>
+                <input type="password" name="password" placeholder="Password" required>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-question-circle"></i>
+                <select name="secret_question" required>
+                    <option value="" disabled selected>Select Recovery Question</option>
+                    <option value="What is your first hospital name?">What is your first hospital name?</option>
+                    <option value="What is your pet's name?">What is your pet's name?</option>
+                    <option value="In which city were you born?">In which city were you born?</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-comment-dots"></i>
+                <input type="text" name="secret_answer" placeholder="Your Answer" required>
+            </div>
+            <button type="submit" class="cta-btn register-btn">Complete Account Setup <i
+                    class="fas fa-check-circle"></i></button>
+        </form>
+        <div style="margin-top: 2rem; border-top: 1px solid #f1f5f9; padding-top: 1.5rem;">
+            <p style="color: var(--text-muted);">Already part of our network? <a href="{{ url_for('login') }}"
+                    style="color: var(--primary); font-weight: 600; text-decoration: none;">Login here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div style="font-size: 3rem; color: var(--primary); margin-bottom: 1.5rem;">
+            <i class="fas fa-user-md"></i>
+        </div>
+        <h2>Doctor Login</h2>
+        <form method="POST">
+            <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input type="text" name="username" placeholder="Username" required>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" placeholder="Password" required>
+            </div>
+            <button type="submit" class="cta-btn">Login to Dashboard <i class="fas fa-sign-in-alt"></i></button>
+        </form>
+        <div style="margin-top: 2rem; border-top: 1px solid #f1f5f9; padding-top: 1.5rem;">
+            <p style="color: var(--text-muted);">New Healthcare Professional? <a href="{{ url_for('register') }}"
+                    style="color: var(--primary); font-weight: 600; text-decoration: none;">Register</a></p>
+            <p style="margin-top: 1rem;"><a href="{{ url_for('forgot_password') }}"
+                    style="color: var(--text-muted); font-size: 0.9rem; text-decoration: none;">Trouble logging in?
+                    Reset Password</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
