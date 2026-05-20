@@ -28,6 +28,15 @@ static/reports/*
 *.msi
 *.mp4
 *.avi
-sample_videos_pro/
+
+# Ignore all videos by default, but track specific names
+sample_videos_pro/*
+!sample_videos_pro/Divya_*.mp4
+!sample_videos_pro/Grandpa_*.mp4
+!sample_videos_pro/IT_*.mp4
+!sample_videos_pro/Mark_*.mp4
+!sample_videos_pro/Shreya*.mp4
+!sample_videos_pro/student_*.mp4
+
 sample_videos/
 uml_diagrams/
